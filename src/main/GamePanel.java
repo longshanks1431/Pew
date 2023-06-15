@@ -16,29 +16,50 @@ import javax.swing.JPanel;
 
 import inputs.KeyboardInputs;
 
+import static utilz.Constants.PlayerConstants.*;
+
 public class GamePanel extends JPanel {
 
     private float xDelta, yDelta = 100;
     private float xDir = 2f, yDir = 2f;
-    private BufferedImage img;
+    private BufferedImage img, subImg;
+    private BufferedImage[][] animations;
+    private int aniTick, aniIndex, aniSpeed = 8;
+    private int playerAction = IDLE;
+
     //private Color color = new Color(150, 20, 90);
     //private Random random;
 
     public GamePanel() {
         //random = new Random();
         importImg();
+        loadAnimations();
         
         setPanelSize();
         addKeyListener(new KeyboardInputs(this));
     }
 
+    private void loadAnimations() {
+        animations = new BufferedImage[7][12];
+
+        for (int j = 0; j < animations.length; j++)
+            for(int i = 0; i < animations[j].length; i++)
+                animations[j][i] = img.getSubimage(i*32, j*32, 32, 32);
+    }
+
     private void importImg() {
-        InputStream is = getClass().getResourceAsStream("/run.png");
+        InputStream is = getClass().getResourceAsStream("/res/heroAtlas.png");
 
         try {
             img = ImageIO.read(is);
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            try {
+                is.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -61,11 +82,26 @@ public class GamePanel extends JPanel {
 
         super.paintComponent(g);
 
-        g.drawImage(img.getSubimage(0, 0, 32, 32), (int)xDelta, (int)yDelta, 128, 128, null);
+        updateAnimationTick();
+
+        //subImg = img.getSubimage(0, 0, 32, 32);
+        g.drawImage(animations[playerAction][aniIndex], (int)xDelta, (int)yDelta, 128, 128, null);
 
         // updateRectangle();
         // g.setColor(color);
         // g.fillRect((int)xDelta, (int)yDelta, 50, 70);
+
+    }
+
+    private void updateAnimationTick() {
+
+        aniTick++;
+        if(aniTick >= aniSpeed) {
+            aniTick = 0;
+            aniIndex++;
+            if(aniIndex >= GetSpriteAmount(playerAction))
+                aniIndex = 0;
+        }
 
     }
 
