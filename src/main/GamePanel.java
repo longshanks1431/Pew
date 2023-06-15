@@ -17,6 +17,7 @@ import javax.swing.JPanel;
 import inputs.KeyboardInputs;
 
 import static utilz.Constants.PlayerConstants.*;
+import static utilz.Constants.Directions.*;
 
 public class GamePanel extends JPanel {
 
@@ -26,6 +27,8 @@ public class GamePanel extends JPanel {
     private BufferedImage[][] animations;
     private int aniTick, aniIndex, aniSpeed = 8;
     private int playerAction = IDLE;
+    private int playerDir = -1; 
+    private boolean moving = false;
 
     //private Color color = new Color(150, 20, 90);
     //private Random random;
@@ -70,12 +73,47 @@ public class GamePanel extends JPanel {
         setMaximumSize(size);
     }
 
-    public void changeXDelta(int value) {
-        this.xDelta += value;
+    public void setDirection(int direction) {
+        this.playerDir = direction;
+        moving = true;
     }
 
-    public void changeYDelta(int value) {
-        this.yDelta += value;
+    public void setMoving(boolean moving) {
+        this.moving = moving;
+    }
+
+    // public void changeXDelta(int value) {
+    //     this.xDelta += value;
+    // }
+
+    // public void changeYDelta(int value) {
+    //     this.yDelta += value;
+    // }
+
+    private void setAnimation() {
+        if(moving)
+            playerAction = RUNNING;
+        else 
+            playerAction = IDLE;
+    }
+
+    private void updatePos() {
+            if(moving) {
+                switch(playerDir) {
+                    case LEFT:
+                        xDelta-=5;
+                        break;
+                    case UP:
+                        yDelta-=5;
+                        break;                        
+                    case RIGHT:
+                        xDelta+=5;
+                        break;
+                    case DOWN:
+                        yDelta+=5;
+                        break;
+                }
+            }
     }
 
     public void paintComponent(Graphics g) {
@@ -84,14 +122,19 @@ public class GamePanel extends JPanel {
 
         updateAnimationTick();
 
+        setAnimation();
+
+        updatePos();
+
         //subImg = img.getSubimage(0, 0, 32, 32);
-        g.drawImage(animations[playerAction][aniIndex], (int)xDelta, (int)yDelta, 128, 128, null);
+        g.drawImage(animations[playerAction][aniIndex], (int)xDelta, (int)yDelta, 96, 96, null);
 
         // updateRectangle();
         // g.setColor(color);
         // g.fillRect((int)xDelta, (int)yDelta, 50, 70);
 
     }
+
 
     private void updateAnimationTick() {
 
