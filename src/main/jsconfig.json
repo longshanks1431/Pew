@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+      "baseUrl": "./src",
+      "paths": {
+        "assets/*": [
+          "./assets/*" // <-- relative to baseURL, so it will resolve to ./src/assets/*
+        ]
+      }
+    }
+  }
