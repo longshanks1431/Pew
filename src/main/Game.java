@@ -1,5 +1,8 @@
 package main;
 
+import entities.Player;
+import java.awt.Graphics;
+
 public class Game implements Runnable {
 
     private GameWindow gameWindow;
@@ -7,17 +10,19 @@ public class Game implements Runnable {
     private Thread gameThread;
     private final int FPS_SET = 120;
     private final int UPS_SET = 200;
+    private Player player;
 
+    //this constructor is the head method. game window and panel are created here, classes are initialized, game loop is started  
     public Game() {
-        //this constructor is the head method of the class - whenever we create object, we call this
-
-        //System.out.println("I am the game constructor. I am working thus far.");
-
-        gamePanel = new GamePanel();
+        initClasses();
+        gamePanel = new GamePanel(this);
         gameWindow = new GameWindow(gamePanel);
         gamePanel.requestFocus();
         startGameLoop();
+    }
 
+    private void initClasses() {
+        player  = new Player(200,200);
     }
 
     private void startGameLoop() {
@@ -26,7 +31,11 @@ public class Game implements Runnable {
     }
 
     public void update() {
-        gamePanel.updateGame();
+        player.update();
+    }
+
+    public void render(Graphics g) {
+        player.render(g);
     }
 
     @Override
@@ -34,8 +43,6 @@ public class Game implements Runnable {
 
         double timePerFrame = 1000000000.0 / FPS_SET;
         double timePerUpdate = 1000000000.0 / UPS_SET;
-        // long lastFrame = System.nanoTime();
-        // long now = System.nanoTime();
         int frames = 0;
         int updates = 0;
         long lastCheck = System.currentTimeMillis();
@@ -46,8 +53,6 @@ public class Game implements Runnable {
         double deltaF = 0;
 
         while(true) {
-
-            //now = System.nanoTime();
             long currentTime = System.nanoTime();
 
             deltaU += (currentTime - previousTime) / timePerUpdate;
@@ -67,12 +72,6 @@ public class Game implements Runnable {
 
             }
 
-            // if(now - lastFrame >= timePerFrame) {
-            //     gamePanel.repaint();
-            //     lastFrame = now;
-            //     frames++;
-            // }
-
             
             if (System.currentTimeMillis() - lastCheck >= 1000) {
                 lastCheck = System.currentTimeMillis();
@@ -82,6 +81,14 @@ public class Game implements Runnable {
             }
 
         }
+    }
+
+    public void windowFocusLost() {
+        player.resetDirBooleans();
+    }
+
+    public Player getPlayer() {
+        return player;
     }
     
 }
