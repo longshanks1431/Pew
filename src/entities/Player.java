@@ -7,6 +7,8 @@ import java.io.InputStream;
 
 import javax.imageio.ImageIO;
 
+import utilz.LoadSave;
+
 import static utilz.Constants.Directions.LEFT;
 import static utilz.Constants.Directions.RIGHT;
 import static utilz.Constants.Directions.UP;
@@ -41,7 +43,7 @@ public class Player extends Entity {
     }
 
     public void render(Graphics g) {
-        g.drawImage(animations[playerAction][aniIndex], (int)x, (int)y, 96, 96, null);
+        g.drawImage(animations[playerAction][aniIndex], (int)x, (int)y, 64, 64, null);
     }
 
     private void updateAnimationTick() {
@@ -99,25 +101,14 @@ public class Player extends Entity {
     }
 
     private void loadAnimations() {
-        InputStream is = getClass().getResourceAsStream("/res/heroAtlas.png");
 
-        try {
-            BufferedImage img = ImageIO.read(is);
+            BufferedImage img = LoadSave.GetSpriteAtlas(LoadSave.PLAYER_ATLAS);
 
             animations = new BufferedImage[7][12];
             for (int j = 0; j < animations.length; j++)
                 for(int i = 0; i < animations[j].length; i++)
                     animations[j][i] = img.getSubimage(i*32, j*32, 32, 32);
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                is.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
     }
 
     public void resetDirBooleans() {
