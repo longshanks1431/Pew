@@ -43,5 +43,9 @@ public class LevelManager {
     public void update() {
 
     }
+
+    public Level getCurrenLevel() {
+        return levelOne;
+    }
     
 }
