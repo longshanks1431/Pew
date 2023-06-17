@@ -3,17 +3,22 @@ package utilz;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.awt.Color;
+import static utilz.Constants.EnemyConstants.CRABBY;
 
 import javax.imageio.ImageIO;
 
+import entities.Crabby;
 import main.Game;
 
 public class LoadSave {
 
     public static final String PLAYER_ATLAS = "heroAtlas.png";
     public static final String LEVEL_ATLAS = "levelAtlas.png";
-    public static final String LEVEL_ONE_DATA = "level_one_data.png";
+    public static final String LEVEL_ONE_DATA = "level_one_data_long.png";
+    public static final String CRAB_ATLAS = "crab.png";
+    public static final String MENU_BUTTONS = "button_atlas.png";
 
     public static BufferedImage GetSpriteAtlas(String fileName) {
         BufferedImage img = null;
@@ -33,9 +38,24 @@ public class LoadSave {
         return img;
     }
 
-    public static int[][] GetLevelData() {
-        int[][] lvlData = new int[Game.TILES_IN_HEIGHT][Game.TILES_IN_WIDTH];
+    public static ArrayList<Crabby> GetCrabs() {
         BufferedImage img = GetSpriteAtlas(LEVEL_ONE_DATA);
+        ArrayList<Crabby> list = new ArrayList<>();
+
+        for(int j=0; j<img.getHeight(); j++)
+            for(int i=0; i<img.getWidth(); i++) {
+            Color color = new Color(img.getRGB(i, j));
+            int value = color.getGreen();
+            if (value == CRABBY)
+                list.add(new Crabby(i*Game.TILES_SIZE, j*Game.TILES_SIZE));
+            }
+        return list;
+    }
+
+    public static int[][] GetLevelData() {
+
+        BufferedImage img = GetSpriteAtlas(LEVEL_ONE_DATA);
+        int[][] lvlData = new int[img.getHeight()][img.getWidth()];
 
         for(int j=0; j<img.getHeight(); j++)
             for(int i=0; i<img.getWidth(); i++) {
