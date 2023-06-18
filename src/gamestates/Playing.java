@@ -55,7 +55,7 @@ public class Playing extends State implements Statemethods {
     public void update() {
         levelManager.update();
         player.update();
-        enemyManager.update(levelManager.getCurrenLevel().GetLevelData());
+        enemyManager.update(levelManager.getCurrenLevel().GetLevelData(), player);
 
         checkCloseToBorder();
     }
