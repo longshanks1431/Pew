@@ -11,6 +11,10 @@ import utilz.LoadSave;
 import java.awt.image.BufferedImage;
 import java.util.Random;
 
+import UI.GameOverOverlay;
+
+import java.awt.geom.Rectangle2D;
+
 import static utilz.Constants.Environment.*;
 
 public class Playing extends State implements Statemethods {
@@ -18,6 +22,8 @@ public class Playing extends State implements Statemethods {
     private Player player;
     private LevelManager levelManager;
     private EnemyManager enemyManager;
+    private GameOverOverlay gameOverOverlay;
+
 
     private int xLvlOffset;
     private int leftBorder = (int) (0.2 * Game.GAME_WIDTH);
@@ -29,6 +35,8 @@ public class Playing extends State implements Statemethods {
     private BufferedImage backgroundImg, bigCloud, smallCloud;
     private int[] smallCloudsPos;
     private Random rnd = new Random();
+
+    private boolean gameOver;
 
     // constructor for the Playing state where the actual gameplay happens
     public Playing(Game game) {
@@ -47,17 +55,20 @@ public class Playing extends State implements Statemethods {
     private void initClasses() {
         levelManager = new LevelManager(game);
         enemyManager = new EnemyManager(this);
-        player  = new Player(200,200, (int)(32 * Game.SCALE), (int)(32 * Game.SCALE));
+        player  = new Player(200,200, (int)(32 * Game.SCALE), (int)(32 * Game.SCALE), this);
         player.loadLvlData(levelManager.getCurrenLevel().GetLevelData());
+        gameOverOverlay = new GameOverOverlay(this);
     }
 
     @Override
     public void update() {
-        levelManager.update();
-        player.update();
-        enemyManager.update(levelManager.getCurrenLevel().GetLevelData(), player);
+        if (!gameOver) {
+            levelManager.update();
+            player.update();
+            enemyManager.update(levelManager.getCurrenLevel().GetLevelData(), player);
 
-        checkCloseToBorder();
+            checkCloseToBorder();
+        }
     }
 
     private void checkCloseToBorder() {
@@ -84,6 +95,9 @@ public class Playing extends State implements Statemethods {
         levelManager.draw(g, xLvlOffset);
         player.render(g, xLvlOffset);
         enemyManager.draw(g, xLvlOffset);
+
+        if(gameOver)
+            gameOverOverlay.draw(g);
     }
 
     private void drawClouds(Graphics g) {
@@ -94,58 +108,76 @@ public class Playing extends State implements Statemethods {
             g.drawImage(smallCloud, SMALL_CLOUD_WIDTH * 4 * i - (int) (xLvlOffset * 0.7), smallCloudsPos[i], SMALL_CLOUD_WIDTH, SMALL_CLOUD_HEIGHT, null);
     }
 
+    // reset playing, enemy, level etc.
+    public void resetAll() {
+        gameOver = false;
+        //paused = false; haven't written pause yet, probably will
+        player.resetAll();
+        enemyManager.resetAllEnemies();
+    }
+
+    public void setGameOver(boolean gameOver) {
+        this.gameOver = gameOver;
+    }
+
+    public void checkEnemyHit(Rectangle2D.Float attackBox) {
+        enemyManager.checkEnemyHit(attackBox);
+    }
+
     @Override
     public void keyPressed(KeyEvent e) {
+        if (gameOver)
+            gameOverOverlay.keyPressed(e);
+        else
+            switch(e.getKeyCode()) {
 
-        switch(e.getKeyCode()) {
-
-            case KeyEvent.VK_W:
-                player.setUp(true);
-                break;          
-            case KeyEvent.VK_A:
-                player.setLeft(true);
-                break;
-            case KeyEvent.VK_S:
-                player.setDown(true);
-                break;
-            case KeyEvent.VK_D:
-                player.setRight(true);
-                break;
-            case KeyEvent.VK_P:
-                player.setAttack(true);
-                break;
-            case KeyEvent.VK_SPACE:
-                player.setJump(true);
-                break;
-            case KeyEvent.VK_BACK_SPACE: 
-                Gamestate.state = Gamestate.MENU;
-        }
+                case KeyEvent.VK_W:
+                    player.setUp(true);
+                    break;          
+                case KeyEvent.VK_A:
+                    player.setLeft(true);
+                    break;
+                case KeyEvent.VK_S:
+                    player.setDown(true);
+                    break;
+                case KeyEvent.VK_D:
+                    player.setRight(true);
+                    break;
+                case KeyEvent.VK_P:
+                    player.setAttack(true);
+                    break;
+                case KeyEvent.VK_SPACE:
+                    player.setJump(true);
+                    break;
+                case KeyEvent.VK_BACK_SPACE: 
+                    Gamestate.state = Gamestate.MENU;
+            }
 
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
-        switch(e.getKeyCode()) {
-
-            case KeyEvent.VK_W:
-                player.setUp(false);
-                break;          
-            case KeyEvent.VK_A:
-                player.setLeft(false);
-                break;
-            case KeyEvent.VK_S:
-                player.setDown(false);
-                break;
-            case KeyEvent.VK_D:
-                player.setRight(false);
-                break;
-            case KeyEvent.VK_P:
-                player.setAttack(false);
-                break;
-            case KeyEvent.VK_SPACE:
-                player.setJump(false);
-                break;
-        }
+        if (!gameOver)
+            switch(e.getKeyCode()) {
+                case KeyEvent.VK_W:
+                    player.setUp(false);
+                    break;          
+                case KeyEvent.VK_A:
+                    player.setLeft(false);
+                    break;
+                case KeyEvent.VK_S:
+                    player.setDown(false);
+                    break;
+                case KeyEvent.VK_D:
+                    player.setRight(false);
+                    break;
+                case KeyEvent.VK_P:
+                    player.setAttack(false);
+                    break;
+                case KeyEvent.VK_SPACE:
+                    player.setJump(false);
+                    break;
+            }
     }
 
     public void windowFocusLost() {
