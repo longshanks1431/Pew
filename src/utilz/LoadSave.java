@@ -23,6 +23,8 @@ public class LoadSave {
     public static final String BIG_CLOUDS = "big_clouds.png";
     public static final String SMALL_CLOUDS = "small_clouds.png";
     public static final String STATUS_BAR = "health_power_bar.png";
+    public static final String CANNON_ATLAS = "cannon_atlas.png";
+    public static final String BALL = "ball.png";
 
     public static BufferedImage GetSpriteAtlas(String fileName) {
         BufferedImage img = null;
@@ -46,12 +48,12 @@ public class LoadSave {
         BufferedImage img = GetSpriteAtlas(LEVEL_ONE_DATA);
         ArrayList<Crabby> list = new ArrayList<>();
 
-        for(int j=0; j<img.getHeight(); j++)
-            for(int i=0; i<img.getWidth(); i++) {
-            Color color = new Color(img.getRGB(i, j));
-            int value = color.getGreen();
-            if (value == CRABBY)
-                list.add(new Crabby(i*Game.TILES_SIZE, j*Game.TILES_SIZE));
+        for (int j = 0; j < img.getHeight(); j++)
+            for (int i = 0; i < img.getWidth(); i++) {
+                Color color = new Color(img.getRGB(i, j));
+                int value = color.getGreen();
+                if (value == CRABBY)
+                    list.add(new Crabby(i * Game.TILES_SIZE, j * Game.TILES_SIZE));
             }
         return list;
     }
@@ -61,15 +63,15 @@ public class LoadSave {
         BufferedImage img = GetSpriteAtlas(LEVEL_ONE_DATA);
         int[][] lvlData = new int[img.getHeight()][img.getWidth()];
 
-        for(int j=0; j<img.getHeight(); j++)
-            for(int i=0; i<img.getWidth(); i++) {
+        for (int j = 0; j < img.getHeight(); j++)
+            for (int i = 0; i < img.getWidth(); i++) {
                 Color color = new Color(img.getRGB(i, j));
                 int value = color.getRed();
-                if (value>=48)
+                if (value >= 48)
                     value = 0;
                 lvlData[j][i] = value;
             }
         return lvlData;
     }
-    
+
 }

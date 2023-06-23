@@ -1,22 +1,30 @@
 package entities;
 
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.awt.Graphics;
+import java.awt.event.KeyEvent;
+
 import utilz.LoadSave;
 import static utilz.Constants.PlayerConstants.*;
 import static utilz.HelpMethods.*;
 import main.Game;
+import objects.ObjectManager;
+import objects.Projectile;
+import objects.Projectile.*;
+
 import java.awt.Color;
 import java.awt.geom.Rectangle2D;
 import gamestates.Playing;
+import static utilz.Constants.Projectiles.*;
 
 public class Player extends Entity {
 
     private BufferedImage[][] animations;
     private int aniTick, aniIndex, aniSpeed = 14;
-    private int playerAction = IDLE; 
+    private int playerAction = IDLE;
     private boolean moving = false, attacking = false;
-    private boolean left, up, right, down, jump;
+    private boolean left, up, right, down, jump, shoot;
     private float playerSpeed = 2.0f;
     private int[][] lvlData;
     private float xDrawOffset = 5 * Game.SCALE;
@@ -52,13 +60,22 @@ public class Player extends Entity {
     private boolean attackChecked;
     private Playing playing;
 
+    private BufferedImage ballImg = LoadSave.GetSpriteAtlas(LoadSave.BALL);
+    private ArrayList<Projectile> projectiles = new ArrayList<>();
+    private Projectile bullet;
 
     public Player(float x, float y, int width, int height, Playing playing) {
         super(x, y, width, height);
         this.playing = playing;
         loadAnimations();
-        initHitbox(x, y, (int)23*Game.SCALE, (int)23*Game.SCALE);
+        initHitbox(x, y, (int) 23 * Game.SCALE, (int) 23 * Game.SCALE);
         initAttackBox();
+    }
+
+    public boolean faceRight() {
+        if (flipW == -1)
+            return false;
+        return true;
     }
 
     private void initAttackBox() {
@@ -69,22 +86,36 @@ public class Player extends Entity {
 
         updateHealthBar();
 
-        if (currentHealth <=0) {
+        if (currentHealth <= 0) {
             playing.setGameOver(true);
             return;
         }
 
         updateAttackBox();
         updatePos();
-        if(attacking)
+        if (attacking)
             checkAttack();
         updateAnimationTick();
         setAnimation();
+        updateProjectiles();
 
     }
 
+    private void updateProjectiles() {
+        for (Projectile p : projectiles)
+            if (p.isActive()) {
+                p.updatePos();
+                // if (p.getHitbox().intersects(getHitbox())) {
+                // changeHealth(-25);
+                // p.setActive(false);
+                // } else
+                if (IsProjectileHittingLevel(p, lvlData))
+                    p.setActive(false);
+            }
+    }
+
     private void checkAttack() {
-        if(attackChecked || aniIndex != 1)
+        if (attackChecked || aniIndex != 1)
             return;
         attackChecked = true;
         playing.checkEnemyHit(attackBox);
@@ -94,42 +125,50 @@ public class Player extends Entity {
         if (right) {
             attackBox.x = hitbox.x + hitbox.width + (int) (Game.SCALE * 10);
         } else if (left) {
-            attackBox.x = hitbox.x - hitbox.width - (int) (Game.SCALE * 10);            
+            attackBox.x = hitbox.x - hitbox.width - (int) (Game.SCALE * 10);
         }
         attackBox.y = hitbox.y + (Game.SCALE * 10);
     }
 
     private void updateHealthBar() {
-        healthWidth = (int)((currentHealth / (float)maxHealth) * healthBarWidth);
+        healthWidth = (int) ((currentHealth / (float) maxHealth) * healthBarWidth);
     }
 
     public void render(Graphics g, int lvlOffset) {
-        g.drawImage(animations[playerAction][aniIndex], 
-        (int) (hitbox.x - xDrawOffset) - lvlOffset + flipX, 
-        (int) (hitbox.y - yDrawOffset), 
-        width * flipW, height, null);
-        //drawHitbox(g, lvlOffset);
-        drawAttackBox(g, lvlOffset);                
+        g.drawImage(animations[playerAction][aniIndex],
+                (int) (hitbox.x - xDrawOffset) - lvlOffset + flipX,
+                (int) (hitbox.y - yDrawOffset),
+                width * flipW, height, null);
+        // drawHitbox(g, lvlOffset);
+        drawAttackBox(g, lvlOffset);
+        drawProjectiles(g, lvlOffset);
         drawUI(g);
+    }
+
+    private void drawProjectiles(Graphics g, int xLvlOffset) {
+        for (Projectile p : projectiles)
+            if (p.isActive())
+                g.drawImage(ballImg, (int) (p.getHitbox().x - xLvlOffset), (int) (p.getHitbox().y),
+                        BALL_WIDTH, BALL_HEIGHT, null);
     }
 
     private void drawAttackBox(Graphics g, int lvlOffsetX) {
         g.setColor(Color.red);
-        g.drawRect((int)attackBox.x - lvlOffsetX, (int)attackBox.y, (int)attackBox.width, (int)attackBox.height);
+        g.drawRect((int) attackBox.x - lvlOffsetX, (int) attackBox.y, (int) attackBox.width, (int) attackBox.height);
     }
 
     private void drawUI(Graphics g) {
         g.drawImage(statusBarImg, statusBarX, statusBarY, statusBarWidth, statusBarHeight, null);
         g.setColor(Color.red);
         g.fillRect(healthBarXStart + statusBarX, healthBarYStart + statusBarY, healthWidth, healthBarHeight);
-      }
+    }
 
     private void updateAnimationTick() {
         aniTick++;
-        if(aniTick >= aniSpeed) {
+        if (aniTick >= aniSpeed) {
             aniTick = 0;
             aniIndex++;
-            if(aniIndex >= GetSpriteAmount(playerAction)) {
+            if (aniIndex >= GetSpriteAmount(playerAction)) {
                 aniIndex = 0;
                 attacking = false;
                 attackChecked = false;
@@ -137,30 +176,43 @@ public class Player extends Entity {
         }
     }
 
+    protected void shoot() {
+        int dir = 1;
+        if (faceRight() == false)
+            dir = -1;
+
+        projectiles.add(new Projectile((int) getHitbox().x, (int) getHitbox().y,
+                dir));
+    }
+
     private void setAnimation() {
 
         int startAni = playerAction;
 
-        if(moving)
+        if (moving)
             playerAction = RUNNING;
-        else 
+        else
             playerAction = IDLE;
 
         if (inAir) {
-            if (airSpeed<0)
+            if (airSpeed < 0)
                 playerAction = JUMP;
             else
                 playerAction = FALL;
         }
 
-         if (attacking) {
+        if (shoot) {
+            shoot();
+        }
+
+        if (attacking) {
             playerAction = WALLJUMP;
             if (startAni != WALLJUMP) {
                 aniIndex = 1;
                 aniTick = 0;
                 return;
             }
-         }
+        }
 
         if (startAni != playerAction)
             resetAniTick();
@@ -174,11 +226,11 @@ public class Player extends Entity {
     private void updatePos() {
         moving = false;
 
-        if(jump)
+        if (jump)
             jump();
 
         if (!inAir)
-            if((!left && !right) || (right && left))
+            if ((!left && !right) || (right && left))
                 return;
 
         float xSpeed = 0;
@@ -199,15 +251,14 @@ public class Player extends Entity {
                 inAir = true;
         }
 
-        
         if (inAir) {
 
-            if(CanMoveHere(hitbox.x, hitbox.y + airSpeed, hitbox.width, hitbox.height, lvlData)) {
-                
+            if (CanMoveHere(hitbox.x, hitbox.y + airSpeed, hitbox.width, hitbox.height, lvlData)) {
+
                 hitbox.y += airSpeed;
                 airSpeed += gravity;
                 updateXPos(xSpeed);
-                
+
             } else {
                 hitbox.y = GetEntityYPosUnderRoofOrAboveFloor(hitbox, airSpeed);
                 if (airSpeed > 0)
@@ -219,7 +270,7 @@ public class Player extends Entity {
 
         } else
             updateXPos(xSpeed);
-        moving = true;                        
+        moving = true;
     }
 
     private void jump() {
@@ -235,8 +286,8 @@ public class Player extends Entity {
     }
 
     private void updateXPos(float xSpeed) {
-        if(CanMoveHere(hitbox.x + xSpeed, hitbox.y, hitbox.width, hitbox.height, lvlData)) {
-            hitbox.x +=xSpeed;
+        if (CanMoveHere(hitbox.x + xSpeed, hitbox.y, hitbox.width, hitbox.height, lvlData)) {
+            hitbox.x += xSpeed;
         } else {
             hitbox.x = GetEntityXPosNextToWall(hitbox, xSpeed);
         }
@@ -246,23 +297,23 @@ public class Player extends Entity {
     public void changeHealth(int value) {
         currentHealth += value;
 
-        if(currentHealth <= 0) {
+        if (currentHealth <= 0) {
             currentHealth = 0;
-            //gameOver();
+            // gameOver();
         } else if (currentHealth >= maxHealth)
             currentHealth = maxHealth;
     }
 
     private void loadAnimations() {
 
-            BufferedImage img = LoadSave.GetSpriteAtlas(LoadSave.PLAYER_ATLAS);
+        BufferedImage img = LoadSave.GetSpriteAtlas(LoadSave.PLAYER_ATLAS);
 
-            animations = new BufferedImage[7][12];
-            for (int j = 0; j < animations.length; j++)
-                for(int i = 0; i < animations[j].length; i++)
-                    animations[j][i] = img.getSubimage(i*32, j*32, 32, 32);
+        animations = new BufferedImage[7][12];
+        for (int j = 0; j < animations.length; j++)
+            for (int i = 0; i < animations[j].length; i++)
+                animations[j][i] = img.getSubimage(i * 32, j * 32, 32, 32);
 
-            statusBarImg = LoadSave.GetSpriteAtlas(LoadSave.STATUS_BAR);
+        statusBarImg = LoadSave.GetSpriteAtlas(LoadSave.STATUS_BAR);
 
     }
 
@@ -319,6 +370,10 @@ public class Player extends Entity {
         this.jump = jump;
     }
 
+    public void setShoot(boolean shoot) {
+        this.shoot = shoot;
+    }
+
     public void resetAll() {
         resetDirBooleans();
         inAir = false;
@@ -334,6 +389,4 @@ public class Player extends Entity {
             inAir = true;
     }
 
-    
-    
 }
