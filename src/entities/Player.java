@@ -62,7 +62,7 @@ public class Player extends Entity {
 
     private BufferedImage ballImg = LoadSave.GetSpriteAtlas(LoadSave.BALL);
     private ArrayList<Projectile> projectiles = new ArrayList<>();
-    private Projectile bullet;
+    private Projectile bullet = new Projectile(0, 0, -1);
 
     public Player(float x, float y, int width, int height, Playing playing) {
         super(x, y, width, height);
@@ -98,6 +98,7 @@ public class Player extends Entity {
         updateAnimationTick();
         setAnimation();
         updateProjectiles();
+        updateProjectiles1();
 
     }
 
@@ -112,6 +113,16 @@ public class Player extends Entity {
                 if (IsProjectileHittingLevel(p, lvlData))
                     p.setActive(false);
             }
+    }
+
+    private void updateProjectiles1() {
+        bullet.updatePos();
+        // if (getHitbox().intersects(enemy.getHitbox())) {
+        // changeHealth(-25);
+        // p.setActive(false);
+        // } else
+        if (IsProjectileHittingLevel(bullet, lvlData))
+            bullet.setActive(false);
     }
 
     private void checkAttack() {
@@ -142,6 +153,7 @@ public class Player extends Entity {
         // drawHitbox(g, lvlOffset);
         drawAttackBox(g, lvlOffset);
         drawProjectiles(g, lvlOffset);
+        drawOneBullet(g, lvlOffset);
         drawUI(g);
     }
 
@@ -150,6 +162,12 @@ public class Player extends Entity {
             if (p.isActive())
                 g.drawImage(ballImg, (int) (p.getHitbox().x - xLvlOffset), (int) (p.getHitbox().y),
                         BALL_WIDTH, BALL_HEIGHT, null);
+    }
+
+    private void drawOneBullet(Graphics g, int xLvlOffset) {
+        // if (bullet.isActive())
+        g.drawImage(ballImg, (int) (bullet.getHitbox().x - xLvlOffset), (int) (bullet.getHitbox().y),
+                BALL_WIDTH, BALL_HEIGHT, null);
     }
 
     private void drawAttackBox(Graphics g, int lvlOffsetX) {
@@ -185,6 +203,15 @@ public class Player extends Entity {
                 dir));
     }
 
+    protected void shoot1() {
+        int dir = 1;
+        if (faceRight() == false)
+            dir = -1;
+
+        bullet = new Projectile((int) getHitbox().x, (int) getHitbox().y,
+                dir);
+    }
+
     private void setAnimation() {
 
         int startAni = playerAction;
@@ -202,7 +229,7 @@ public class Player extends Entity {
         }
 
         if (shoot) {
-            shoot();
+            shoot1();
         }
 
         if (attacking) {

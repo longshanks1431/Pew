@@ -38,6 +38,8 @@ public class Playing extends State implements Statemethods {
 
     private boolean gameOver;
 
+    private boolean isFiring = false;
+
     // constructor for the Playing state where the actual gameplay happens
     public Playing(Game game) {
         super(game);
@@ -137,10 +139,11 @@ public class Playing extends State implements Statemethods {
 
     @Override
     public void keyPressed(KeyEvent e) {
+        int key = e.getKeyCode();
         if (gameOver)
             gameOverOverlay.keyPressed(e);
         else
-            switch (e.getKeyCode()) {
+            switch (key) {
 
                 case KeyEvent.VK_W:
                     player.setUp(true);
@@ -156,6 +159,7 @@ public class Playing extends State implements Statemethods {
                     break;
                 case KeyEvent.VK_P:
                     player.setAttack(true);
+                    player.setShoot(true);
                     break;
                 case KeyEvent.VK_SPACE:
                     player.setJump(true);
@@ -164,10 +168,10 @@ public class Playing extends State implements Statemethods {
                     Gamestate.state = Gamestate.MENU;
                     break;
                 case KeyEvent.VK_O:
+                    isFiring = true;
                     player.setShoot(true);
                     break;
             }
-
     }
 
     @Override
@@ -188,11 +192,13 @@ public class Playing extends State implements Statemethods {
                     break;
                 case KeyEvent.VK_P:
                     player.setAttack(false);
+                    player.setShoot(false);
                     break;
                 case KeyEvent.VK_SPACE:
                     player.setJump(false);
                     break;
                 case KeyEvent.VK_O:
+                    isFiring = false;
                     player.setShoot(false);
                     break;
             }

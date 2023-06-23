@@ -60,7 +60,7 @@ public class Constants {
         public static final int BALL_HEIGHT_DEFAULT = 6;
         public static final int BALL_WIDTH = (int) (BALL_WIDTH_DEFAULT * Game.SCALE);
         public static final int BALL_HEIGHT = (int) (BALL_HEIGHT_DEFAULT * Game.SCALE);
-        public static final float SPEED = 2.0f * Game.SCALE;
+        public static final float SPEED = 3.0f * Game.SCALE;
     }
 
     public static class Environment {
@@ -171,6 +171,7 @@ public class Constants {
             return 0;
         }
 
+        // Get the amount of health that an enemy starts with
         public static int GetMaxHealth(int enemy_type) {
             switch (enemy_type) {
                 case CRABBY:
@@ -180,6 +181,8 @@ public class Constants {
             }
         }
 
+        // If enemy hit box intersects with player's, this is how much damage the enemy
+        // will do
         public static int GetEnemyDmg(int enemy_type) {
             switch (enemy_type) {
                 case CRABBY:
