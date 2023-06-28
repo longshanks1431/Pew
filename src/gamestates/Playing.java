@@ -124,8 +124,9 @@ public class Playing extends State implements Statemethods {
         this.gameOver = gameOver;
     }
 
-    public void checkEnemyHit(Rectangle2D.Float attackBox) {
+    public boolean checkEnemyHit(Rectangle2D.Float attackBox) {
         enemyManager.checkEnemyHit(attackBox);
+        return enemyManager.checkEnemyHit(attackBox);
     }
 
     // @Override

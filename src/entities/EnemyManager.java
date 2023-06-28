@@ -43,21 +43,22 @@ public class EnemyManager {
             if (c.isActive()) {
                 g.drawImage(crabbyArr[c.getEnemyState()][c.getAniIndex()],
                         (int) c.getHitbox().x - xLvlOffset - CRABBY_DRAWOFFSET_X + c.flipX(),
-                        (int) c.getHitbox().y - CRABBY_DRAWOFFSET_Y,
+                        (int) c.getHitbox().y - CRABBY_DRAWOFFSET_Y - 40,
                         CRABBY_WIDTH * c.flipW(), CRABBY_HEIGHT, null);
                 c.drawHitbox(g, xLvlOffset);
                 c.drawAttackBox(g, xLvlOffset);
             }
     }
 
-    public void checkEnemyHit(Rectangle2D.Float attackBox) {
+    public boolean checkEnemyHit(Rectangle2D.Float attackBox) {
         for (Crabby c : crabbies)
             if (c.isActive()) {
                 if (attackBox.intersects(c.getHitbox())) {
                     c.hurt(10);
-                    return;
+                    return true;
                 }
             }
+        return false;
     }
 
     private void loadEnemyImgs() {

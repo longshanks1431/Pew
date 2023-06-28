@@ -2,6 +2,7 @@ package objects;
 
 import java.awt.geom.Rectangle2D;
 
+import gamestates.Playing;
 import main.Game;
 
 import static utilz.Constants.Projectiles.*;
@@ -10,8 +11,11 @@ public class Projectile {
     private Rectangle2D.Float hitbox;
     private int dir;
     private boolean active = true;
+    private boolean attackChecked;
+    private Playing playing;
 
-    public Projectile(int x, int y, int dir) {
+    public Projectile(int x, int y, int dir, Playing playing) {
+        this.playing = playing;
         int xOffset = (int) (-3 * Game.SCALE);
         int yOffset = (int) (5 * Game.SCALE);
 
@@ -29,6 +33,17 @@ public class Projectile {
     public void setPos(int x, int y) {
         hitbox.x = x;
         hitbox.y = y;
+    }
+
+    public void update() {
+        checkAttack();
+    }
+
+    public void checkAttack() {
+        if (attackChecked)
+            return;
+        attackChecked = true;
+        playing.checkEnemyHit(hitbox);
     }
 
     public Rectangle2D.Float getHitbox() {

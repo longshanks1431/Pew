@@ -161,4 +161,8 @@ public abstract class Enemy extends Entity {
     public boolean isActive() {
         return active;
     }
+
+    public Rectangle2D.Float getHitbox() {
+        return hitbox;
+    }
 }

@@ -168,7 +168,7 @@ public class ObjectManager {
             dir = -1;
 
         projectiles.add(new Projectile((int) player.getHitbox().x, (int) player.getHitbox().y,
-                dir));
+                dir, playing));
 
     }
 
